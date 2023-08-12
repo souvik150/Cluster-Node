@@ -1,7 +1,12 @@
+process.env.UV_THREADPOOL_SIZE= 5;
 const cluster = require('cluster');
+const crypto = require('crypto');
 const express = require("express");
 
 if(cluster.isMaster){
+    cluster.fork();
+    cluster.fork();
+    cluster.fork();
     cluster.fork();
 } else {
     const express = require('express');
@@ -13,8 +18,14 @@ if(cluster.isMaster){
     }
 
     app.get('/', (req, res) => {
-        doWork(5000);
-        res.send("Hi there")
+        crypto.pbkdf2('a', 'b', 100000, 512, 'sha512', () => {
+            res.send("Hi there")
+        })
+
+    });
+
+    app.get('/fast', (req, res) => {
+        res.send("This was fast");
     });
 
     app.listen(8080, () => {

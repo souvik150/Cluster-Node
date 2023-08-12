@@ -1,24 +1,21 @@
-const crypto = require('crypto');
-
 const express = require('express');
+const crypto = require('crypto');
 const app = express();
-
-function doWork(duration){
-    const start = Date.now();
-    while (Date.now() - start < duration){}
-}
+const { Worker } = require('worker_threads');
 
 app.get('/', (req, res) => {
-    crypto.pbkdf2('a', 'b', 100000, 512, 'sha512', () => {
-        res.send("Hi there")
-    })
+    const worker = new Worker('./worker.js');
 
+    worker.on('message', function (message) {
+        console.log(message);
+        res.send('' + message);
+    });
+
+    worker.postMessage('start!');
 });
 
 app.get('/fast', (req, res) => {
-    res.send("This was fast");
+    res.send('This was fast!');
 });
 
-app.listen(8080, () => {
-    console.log("Listening on port 8080")
-})
+app.listen(3000);
